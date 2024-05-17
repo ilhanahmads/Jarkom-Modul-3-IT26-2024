@@ -194,3 +194,5 @@ rm -f /var/run/dhcpd.pid
 service isc-dhcp-server restart
 service isc-dhcp-server status
 ```
+Jika pada salah satu node client sudah bisa melakukan `ping google.com`, maka konfigurasi seharusnya sudah berhasil \
+<a href="https://ibb.co.com/b30gZtm"><img src="https://i.ibb.co.com/j5Nv2tf/Screenshot-2024-05-18-043502.png" alt="Screenshot-2024-05-18-043502" border="0"></a>
