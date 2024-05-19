@@ -152,15 +152,71 @@ echo INTERFACES="eth0" > /etc/default/isc-dhcp-server
 ```
 Buat konfigurasi `.sh` pada Mohiam dan jalankan
 ```
-apt update
-apt install isc-dhcp-server -y
+apt-get update
+apt-get install isc-dhcp-server -y
 
-# Configure the ISC DHCP server to use eth0
-echo "INTERFACESv4=\"eth0\"
-INTERFACESv6=\"\"" > /etc/default/isc-dhcp-server
+interfaces="INTERFACESv4=\"eth0\"
+INTERFACESv6=\"\"
+"
+echo "$interfaces" > /etc/default/isc-dhcp-server
+
+subnet="option domain-name \"example.org\";
+option domain-name-servers ns1.example.org, ns2.example.org;
+
+default-lease-time 600;
+max-lease-time 7200;
+
+ddns-update-style-none;
+
+subnet 192.246.1.0 netmask 255.255.255.0 {
+    range 192.246.1.14 192.246.1.28;
+    range 192.246.1.49 192.246.1.70;
+    option routers 192.246.1.1;
+    option broadcast-address 192.246.1.255;
+    option domain-name-servers 192.246.3.3;
+    default-lease-time 300;
+    max-lease-time 5220;
+}
 
 
-echo "subnet 192.246.1.0 netmask 255.255.255.0 {
+subnet 192.246.2.0 netmask 255.255.255.0 {
+    range 192.246.2.15 192.246.2.25;
+    range 192.246.2.200 192.246.2.210;
+    option routers 192.246.2.1;
+    option broadcast-address 192.246.2.255;
+    option domain-name-servers 192.246.3.3;
+    default-lease-time 1200;
+    max-lease-time 5220;
+}
+
+subnet 192.246.3.0 netmask 255.255.255.0 {
+}
+
+subnet 192.246.4.0 netmask 255.255.255.0 {
+}
+
+"
+echo "$subnet" > /etc/dhcp/dhcpd.conf
+
+service isc-dhcp-server restart
+
+apt-get update
+apt-get install isc-dhcp-server -y
+
+interfaces="INTERFACESv4=\"eth0\"
+INTERFACESv6=\"\"
+"
+echo "$interfaces" > /etc/default/isc-dhcp-server
+
+subnet="option domain-name \"example.org\";
+option domain-name-servers ns1.example.org, ns2.example.org;
+
+default-lease-time 600;
+max-lease-time 7200;
+
+ddns-update-style-none;
+
+subnet 192.246.1.0 netmask 255.255.255.0 {
     range 192.246.1.14 192.246.1.28;
     range 192.246.1.49 192.246.1.70;
     option routers 192.246.1.1;
@@ -181,18 +237,19 @@ subnet 192.246.2.0 netmask 255.255.255.0 {
 }
 
 subnet 192.246.3.0 netmask 255.255.255.0 {
-    option routers 192.246.3.1;
-    option broadcast-address 192.246.3.255;
 }
 
 subnet 192.246.4.0 netmask 255.255.255.0 {
-    option routers 192.246.4.1;
-    option broadcast-address 192.246.4.255;
-}" >/etc/dhcp/dhcpd.conf
+}
 
-rm -f /var/run/dhcpd.pid
+host Revolte {
+    hardware ethernet aa:ce:c1:04:40:60;
+    fixed-address 192.246.2.203;
+}
+"
+echo "$subnet" > /etc/dhcp/dhcpd.conf
+
 service isc-dhcp-server restart
-service isc-dhcp-server status
 ```
 Jika pada salah satu node client sudah bisa melakukan `ping`, maka konfigurasi seharusnya sudah berhasil \
 <a href="https://ibb.co.com/qr4CkRH"><img src="https://i.ibb.co.com/crpwDNW/Screenshot-2024-05-18-045315.png" alt="Screenshot-2024-05-18-045315" border="0"></a>
