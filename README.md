@@ -253,3 +253,108 @@ service isc-dhcp-server restart
 ```
 Jika pada salah satu node client sudah bisa melakukan `ping`, maka konfigurasi seharusnya sudah berhasil \
 <a href="https://ibb.co.com/qr4CkRH"><img src="https://i.ibb.co.com/crpwDNW/Screenshot-2024-05-18-045315.png" alt="Screenshot-2024-05-18-045315" border="0"></a>
+
+## Nomor 6
+Buat konfigurasi `.sh` pada Vladimir, Rabban dan Feyd (PHP Worker) kemudian jalankan
+```
+echo nameserver 192.246.3.3 > /etc/resolv.conf
+
+apt-get update
+apt-get install nginx -y
+apt-get install lynx -y
+apt-get install php php-fpm -y
+apt-get install wget -y
+apt-get install unzip -y
+service nginx start
+service php7.3-fpm start
+
+wget -O '/var/www/atreides.it26.com' 'https://drive.usercontent.google.com/u/0/uc?id=1lmnXJUbyx1JDt2OA5z_1dEowxozfkn30&export=download'
+unzip -o /var/www/atreides.it26.com -d /var/www/
+rm /var/www/atreides.it26.com
+mv /var/www/modul-3 /var/www/atreides.it26.com
+
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/atreides.it26.com
+ln -s /etc/nginx/sites-available/atreides.it26.com /etc/nginx/sites-enabled/
+rm /etc/nginx/sites-enabled/default
+
+echo 'server {
+     listen 80;
+     server_name _;
+
+     root /var/www/atreides.it26.com/;
+     index index.php index.html index.htm;
+
+     location / {
+         try_files $uri $uri/ /index.php?$query_string;
+     }
+
+     location ~ \.php$ {
+         include snippets/fastcgi-php.conf;
+         fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+         include fastcgi_params;
+     }
+ }' > /etc/nginx/sites-available/atreides.it26.com
+
+ service nginx restart
+```
+Buat konfigurasi `client.sh` pada Dmitri dan Paul kemudian jalankan
+```
+echo nameserver 192.168.122.1 >> /etc/resolv.conf
+apt-get update
+apt-get install lynx -y
+apt-get install htop -y
+apt-get install apache2-utils -y
+apt-get install jq -y
+```
+Jika sudah, coba jalankan perintah `lynx [Alamat IP PHP Worker]`. Maka akan muncul tampilan berikut: \
+<a href="https://ibb.co.com/ZS8tBCh"><img src="https://i.ibb.co.com/sCwkKrF/Screenshot-2024-05-19-202759.png" alt="Screenshot-2024-05-19-202759" border="0"></a> 
+
+## Nomor 7
+Buat konfigurasi `.sh` pada Stilgar (Load Balancer) kemudian jalankan
+```
+echo nameserver 192.246.3.3 > /etc/resolv.conf
+
+apt-get update
+apt-get install apache2-utils -y
+apt-get install nginx -y
+apt-get install lynx -y
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/round_robin
+
+echo '
+    upstream round-robin {
+    server 192.246.1.3;
+    server 192.246.1.4;
+    server 192.246.1.5;
+}
+
+server {
+    listen 81;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://round-robin;
+    }
+} ' > /etc/nginx/sites-available/round_robin
+
+ln -sf /etc/nginx/sites-available/round_robin /etc/nginx/sites-enabled/
+
+if [ -f /etc/nginx/sites-enabled/default ]; then
+    rm /etc/nginx/sites-enabled/default
+fi
+
+service nginx restart
+```
+Seharusnya akan muncul statistik pengujian load balancer, akan tetapi kami belum bisa melakukannya
+<a href="https://ibb.co.com/p0bKRYs"><img src="https://i.ibb.co.com/YRPdyHK/Screenshot-2024-05-19-211209.png" alt="Screenshot-2024-05-19-211209" border="0"></a>
+
+## Kendala
+- Belum bisa melakukan pengujian load balancer
+- Belum sempat mengerjakan nomor 8 - 20
